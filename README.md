@@ -1,1 +1,3 @@
-# autofit-tabs
+## Demo
+
+![Demo video](/images/demo.gif) 

@@ -1,0 +1,101 @@
+:root {
+    /* Base dimensions */
+    --autofit-min-width: 40px;
+    --autofit-close-button-width: 28px;
+    --autofit-left-padding: 12px;
+    --autofit-icon-right-margin: 0px;
+    --autofit-close-button-padding: 10px;
+    --autofit-transition-duration: 275ms;
+
+    /* Additional dimensions from TypeScript */
+    --autofit-icon-width: 20px;
+    --autofit-active-indicator-width: 2px;
+}
+
+/* Transitions and core styles */
+.workspace-tab-header.autofit-tab {
+    width: var(--header-width) !important;
+    min-width: var(--header-width) !important;
+    max-width: var(--header-width) !important;
+    transition: all var(--autofit-transition-duration) ease-in-out !important;
+    position: relative;
+}
+
+/* Basic layout */
+.workspace-tab-header.autofit-tab .workspace-tab-header-inner {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-left: var(--autofit-left-padding);
+}
+
+.workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
+    white-space: nowrap;
+    margin-right: var(--autofit-close-button-padding);
+    overflow: visible;
+}
+
+.workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon {
+    margin-right: var(--autofit-icon-right-margin);
+    width: var(--autofit-icon-width);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Active tab indicator */
+.workspace-tab-header.autofit-tab.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--autofit-active-indicator-width);
+}
+
+/* Container */
+.workspace-tab-header-container-inner {
+    overflow: visible;
+}
+
+/* Measurement */
+.autofit-tab-measure {
+    visibility: hidden;
+    position: absolute;
+    white-space: nowrap;
+    pointer-events: none;
+    font: inherit;
+}
+
+/* Text measurement styling - moved from measureTextWidth() */
+.autofit-tab-measure {
+    visibility: hidden;
+    position: absolute;
+    white-space: nowrap;
+    pointer-events: none;
+    font: inherit;
+    left: -9999px;
+    /* Ensure it's off-screen */
+}
+
+/* Header styles - consolidated from TypeScript style applications */
+.workspace-tab-header {
+    transition: none;
+    /* Default state */
+}
+
+.workspace-tab-header.autofit-tab {
+    width: var(--header-width) !important;
+    min-width: var(--header-width) !important;
+    max-width: var(--header-width) !important;
+    transition: all var(--autofit-transition-duration) ease-in-out !important;
+    position: relative;
+}
+
+/* Cleanup class for plugin unload */
+.workspace-tab-header.autofit-cleanup {
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    transition: none !important;
+}

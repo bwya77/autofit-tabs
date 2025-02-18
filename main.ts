@@ -240,79 +240,94 @@ class AutoFitTabsSettingTab extends PluginSettingTab {
     }
 
     private createSettingsUI(container: HTMLElement) {
-    this.createSettingsSection(container, 'Basic dimensions', [
-        {
-            name: 'Minimum width',
-            desc: 'Minimum width in pixels for very short titles',
-            prop: 'minWidth'
-        },
-        {
-            name: 'Close button width',
-            desc: 'Width in pixels for the tab close button',
-            prop: 'closeButtonWidth'
-        },
-        {
-            name: 'Left padding',
-            desc: 'Padding in pixels before the icon',
-            prop: 'leftPadding'
-        }
-    ]);
+        // General settings at the top without a heading
+        [
+            {
+                name: 'Close button padding',
+                desc: 'Space in pixels before close button',
+                prop: 'closeButtonPadding'
+            },
+            {
+                name: 'Active indicator width',
+                desc: 'Width in pixels for the active tab indicator',
+                prop: 'activeIndicatorWidth'
+            },
+            {
+                name: 'Transition duration',
+                desc: 'Duration in milliseconds for smooth transitions',
+                prop: 'transitionDuration'
+            }
+        ].forEach(({ name, desc, prop }) => {
+            new Setting(container)
+                .setName(name)
+                .setDesc(`${desc} (default: ${DEFAULT_SETTINGS[prop]})`)
+                .addText(text => text
+                    .setPlaceholder(String(DEFAULT_SETTINGS[prop]))
+                    .setValue(String(this.plugin.settings[prop]))
+                    .onChange(async (value) => {
+                        const numValue = Number(value);
+                        if (!isNaN(numValue) && numValue >= 0) {
+                            this.plugin.settings[prop] = numValue;
+                            await this.plugin.saveSettings();
+                        }
+                    }));
+        });
 
-    this.createSettingsSection(container, 'Icons', [
-        {
-            name: 'Icon width',
-            desc: 'Width in pixels for tab icons',
-            prop: 'iconWidth'
-        },
-        {
-            name: 'Icon right margin',
-            desc: 'Space in pixels between icon and text',
-            prop: 'iconRightMargin'
-        }
-    ]);
+        this.createSettingsSection(container, 'Basic dimensions', [
+            {
+                name: 'Minimum width',
+                desc: 'Minimum width in pixels for very short titles',
+                prop: 'minWidth'
+            },
+            {
+                name: 'Close button width',
+                desc: 'Width in pixels for the tab close button',
+                prop: 'closeButtonWidth'
+            },
+            {
+                name: 'Left padding',
+                desc: 'Padding in pixels before the icon',
+                prop: 'leftPadding'
+            }
+        ]);
 
-    this.createSettingsSection(container, 'Other', [
-        {
-            name: 'Close button padding',
-            desc: 'Space in pixels before close button',
-            prop: 'closeButtonPadding'
-        },
-        {
-            name: 'Active indicator width',
-            desc: 'Width in pixels for the active tab indicator',
-            prop: 'activeIndicatorWidth'
-        },
-        {
-            name: 'Transition duration',
-            desc: 'Duration in milliseconds for smooth transitions',
-            prop: 'transitionDuration'
-        }
-    ]);
-}
+        this.createSettingsSection(container, 'Icons', [
+            {
+                name: 'Icon width',
+                desc: 'Width in pixels for tab icons',
+                prop: 'iconWidth'
+            },
+            {
+                name: 'Icon right margin',
+                desc: 'Space in pixels between icon and text',
+                prop: 'iconRightMargin'
+            }
+        ]);
+    }
 
     private createSettingsSection(container: HTMLElement, title: string, settings: Array<{
-    name: string;
-    desc: string;
-    prop: keyof PluginSettings;
-}>) {
-    new Setting(container)
-        .setName(title)
-        .setHeading();
-    
-    settings.forEach(({ name, desc, prop }) => {
+        name: string;
+        desc: string;
+        prop: keyof PluginSettings;
+    }>) {
         new Setting(container)
-            .setName(name)
-            .setDesc(`${desc} (default: ${DEFAULT_SETTINGS[prop]})`)
-            .addText(text => text
-                .setPlaceholder(String(DEFAULT_SETTINGS[prop]))
-                .setValue(String(this.plugin.settings[prop]))
-                .onChange(async (value) => {
-                    const numValue = Number(value);
-                    if (!isNaN(numValue) && numValue >= 0) {
-                        this.plugin.settings[prop] = numValue;
-                        await this.plugin.saveSettings();
-                    }
-                }));
-    });
-}
+            .setName(title)
+            .setHeading();
+        
+        settings.forEach(({ name, desc, prop }) => {
+            new Setting(container)
+                .setName(name)
+                .setDesc(`${desc} (default: ${DEFAULT_SETTINGS[prop]})`)
+                .addText(text => text
+                    .setPlaceholder(String(DEFAULT_SETTINGS[prop]))
+                    .setValue(String(this.plugin.settings[prop]))
+                    .onChange(async (value) => {
+                        const numValue = Number(value);
+                        if (!isNaN(numValue) && numValue >= 0) {
+                            this.plugin.settings[prop] = numValue;
+                            await this.plugin.saveSettings();
+                        }
+                    }));
+        });
+    }
 }

@@ -1,5 +1,4 @@
 import { Plugin, PluginSettingTab, Setting, App } from 'obsidian';
-import './styles.css';
 
 interface PluginSettings {
     minWidth: number;

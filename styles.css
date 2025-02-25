@@ -4,58 +4,26 @@
     --autofit-close-button-width: 28px;
     --autofit-left-padding: 12px;
     --autofit-icon-right-margin: 0px;
-    --autofit-close-button-padding: 10px;
+    --autofit-close-button-padding: 0px;
     --autofit-transition-duration: 275ms;
+    --autofit-max-width: none;
 
     /* Additional dimensions from TypeScript */
     --autofit-icon-width: 20px;
-    --autofit-active-indicator-width: 2px;
 }
 
-/* Transitions and core styles */
-.workspace-tab-header.autofit-tab {
-    width: var(--header-width) !important;
-    min-width: var(--header-width) !important;
-    max-width: var(--header-width) !important;
-    transition: all var(--autofit-transition-duration) ease-in-out !important;
-    position: relative;
+/* Ensure tab interior elements have proper spacing */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-max-width .workspace-tab-header-inner {
+    justify-content: flex-start !important;
 }
 
-/* Basic layout */
-.workspace-tab-header.autofit-tab .workspace-tab-header-inner {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding-left: var(--autofit-left-padding);
+/* Handle close button visibility */
+.workspace-tab-header.autofit-tab:not(.is-active) .workspace-tab-header-inner-close-button {
+    opacity: 0;
 }
 
-.workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    white-space: nowrap;
-    margin-right: var(--autofit-close-button-padding);
-    overflow: visible;
-}
-
-.workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon {
-    margin-right: var(--autofit-icon-right-margin);
-    width: var(--autofit-icon-width);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Active tab indicator */
-.workspace-tab-header.autofit-tab.is-active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--autofit-active-indicator-width);
-}
-
-/* Container */
-.workspace-tab-header-container-inner {
-    overflow: visible;
+.workspace-tab-header.autofit-tab:not(.is-active):hover .workspace-tab-header-inner-close-button {
+    opacity: 1;
 }
 
 /* Measurement */
@@ -65,37 +33,146 @@
     white-space: nowrap;
     pointer-events: none;
     font: inherit;
-}
-
-/* Text measurement styling - moved from measureTextWidth() */
-.autofit-tab-measure {
-    visibility: hidden;
-    position: absolute;
-    white-space: nowrap;
-    pointer-events: none;
-    font: inherit;
     left: -9999px;
-    /* Ensure it's off-screen */
 }
 
-/* Header styles - consolidated from TypeScript style applications */
-.workspace-tab-header {
-    transition: none;
-    /* Default state */
+/* Make sure we're respecting the transition duration setting */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header {
+    transition-property: width, min-width, max-width;
+    transition-duration: var(--autofit-transition-duration);
+    transition-timing-function: ease-in-out;
 }
 
+/* Prevent icon swapping/flashing during tab transitions */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-icon svg {
+    transition: none !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Ensuring proper sizing for autofit-tab & cleanup */
 .workspace-tab-header.autofit-tab {
     width: var(--header-width) !important;
     min-width: var(--header-width) !important;
     max-width: var(--header-width) !important;
     transition: all var(--autofit-transition-duration) ease-in-out !important;
     position: relative;
+    /* Reset some defaults to ensure proper layout */
+    display: flex !important;
 }
 
-/* Cleanup class for plugin unload */
-.workspace-tab-header.autofit-cleanup {
+/* Prevent icon changes during transitions */
+.workspace-tab-header-inner-icon.stable-icon {
+    transition: none !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+}
+
+/* Prevent icon changes completely during transitions */
+.workspace-tab-header.icon-transition .workspace-tab-header-inner-icon {
+    transition: none !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+}
+
+/* Apply a temporary overlay to prevent DOM structure changes from being visible */
+.workspace-tab-header.icon-transition::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+/* Help ensure proper cleanup when removing max-width setting */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-cleanup {
     width: auto !important;
     min-width: auto !important;
     max-width: none !important;
     transition: none !important;
+    display: flex !important;
+}
+
+/* Ensure we only style the root content area tabs */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab {
+    width: var(--header-width) !important;
+    min-width: var(--header-width) !important;
+    max-width: var(--header-width) !important;
+    position: relative;
+}
+
+/* Title styles - fix structure especially when cleaning up max-width tabs */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner,
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-cleanup .workspace-tab-header-inner {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-left: var(--autofit-left-padding);
+    position: relative;
+    transition: all var(--autofit-transition-duration) ease-in-out !important;
+}
+
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip !important;
+}
+
+/* Icon styles - only for root content area */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon {
+    margin-right: var(--autofit-icon-right-margin);
+    width: var(--autofit-icon-width);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: none !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Active tab indicator styling is managed by the theme */
+
+/* Only applying styles to the main editor tabs, NOT sidedock or left pane */
+.workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-container-inner {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+/* Hide scrollbar in Webkit browsers - only main editor tabs */
+.workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-container-inner::-webkit-scrollbar {
+    height: 0;
+    width: 0;
+    display: none;
+}
+
+/* Tab title styles - base for all tabs */
+.workspace-tab-header-inner-title {
+    white-space: nowrap !important;
+}
+
+/* Styles for tabs with max-width setting - handle overflow and ensure spacing */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-max-width .workspace-tab-header-inner-title {
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    max-width: calc(100% - var(--autofit-close-button-width) - 8px);
+}
+
+
+
+/* Ensure tab container styling - only main editor tabs */
+.workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-container {
+    overflow: hidden;
+}
+
+/* Ensure tabs don't wrap - only main editor tabs */
+.workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-tab-list {
+    flex-wrap: nowrap !important;
+    display: flex !important;
 }

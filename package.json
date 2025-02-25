@@ -1,6 +1,6 @@
 {
   "name": "autofit-tabs",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Automatically adjusts tab header widths in real-time to perfectly fit each tab's title content while maintaining a clean, seamless interface that prevents awkward text truncation and ensures optimal readability of your document titles.",
   "main": "main.js",
   "scripts": {

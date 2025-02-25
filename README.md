@@ -12,6 +12,14 @@ Automatically adjusts tab header widths in real-time to perfectly fit each tab's
 - **Highly Customizable**: Fine-tune every aspect of tab appearance
 - **Resource Efficient**: Uses caching to minimize performance impact
 - **Clean Interface**: Maintains Obsidian's sleek look and feel
+- **Max Width**: Set a maximum width for tabs to prevent excessive resizing
+- **Close Button**: Customize the close button width and padding
+- **Icon Padding**: Adjust the space before the tab icon
+- **Icon Right Margin**: Set the space between icon and text
+- **Close Button Padding**: Adjust the space before the close button
+- **Transition Duration**: Set how fast tabs animate when resizing
+- **Scrolling Tab Bars**: Enables tabs to be scrolled left and right when they exceed the available space
+- **Auto Center Tabs**: When clicking a tab that is off-screen, the tab will automatically scroll into view
 
 ## Installation
 
@@ -38,16 +46,32 @@ You can customize the following settings in the plugin options:
 
 ![Plugin Settings](/images/settings.png) 
 
-- **Minimum Width**: Set the smallest allowed width for tabs (default: 40px)
-- **Close Button Width**: Adjust the width of the tab close button (default: 28px)
-- **Left Padding**: Set the padding before the tab icon (default: 12px)
-- **Icon Right Margin**: Set the space between icon and text (default: 0px)
-- **Close Button Padding**: Adjust the space before the close button (default: 10px)
-- **Transition Duration**: Set how fast tabs animate when resizing (default: 315ms)
+### General
+
+| Setting              | Description                                     | Default |
+| -------------------- | ----------------------------------------------- | ------- |
+| Close button padding | Space in pixels before close button             | 0       |
+| Transition duration  | Duration in milliseconds for smooth transitions | 275     |
+
+### Basic dimensions
+
+| Setting            | Description                                     | Default |
+| ------------------ | ----------------------------------------------- | ------- |
+| Minimum width      | Minimum width in pixels for very short titles   | 40      |
+| Max width          | Maximum width in pixels for tabs (0 to disable) | 0       |
+| Close button width | Width in pixels for the tab close button        | 28      |
+| Left padding       | Padding in pixels before the icon               | 12      |
+
+### Icons
+
+| Setting           | Description                           | Default |
+| ----------------- | ------------------------------------- | ------- |
+| Icon width        | Width in pixels for tab icons         | 20      |
+| Icon right margin | Space in pixels between icon and text | 0       |
 
 ## Compatibility
 
-- Requires Obsidian v0.15.0 or higher
+- Requires Obsidian v1.0.0 or higher
 - Desktop only (not available for mobile)
 - Compatible with most themes and plugins
 

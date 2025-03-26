@@ -20,10 +20,14 @@
 /* Handle close button visibility */
 .workspace-tab-header.autofit-tab:not(.is-active) .workspace-tab-header-inner-close-button {
     opacity: 0;
+    /* Ensure close button space is always reserved even when not visible */
+    visibility: visible;
+    pointer-events: none;
 }
 
 .workspace-tab-header.autofit-tab:not(.is-active):hover .workspace-tab-header-inner-close-button {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Measurement */
@@ -126,7 +130,7 @@
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon {
     margin-right: var(--autofit-icon-right-margin);
     width: var(--autofit-icon-width);
-    display: flex;
+    display: var(--autofit-icon-display, flex); /* Use flex by default, none when icon width is 0 */
     align-items: center;
     justify-content: center;
     transition: none !important;
@@ -164,6 +168,11 @@
     max-width: calc(100% - var(--autofit-close-button-width) - 8px);
 }
 
+/* Add padding-right to all tab titles to ensure space for close button */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-title {
+    padding-right: calc(var(--autofit-close-button-width) + 4px);
+}
+
 
 
 /* Ensure tab container styling - only main editor tabs */
@@ -175,4 +184,12 @@
 .workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-tab-list {
     flex-wrap: nowrap !important;
     display: flex !important;
+}
+
+/* Fix position of close button to prevent jitter when icon width is 0 */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header .workspace-tab-header-inner-close-button {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }

@@ -34,6 +34,7 @@ export default class AutoFitTabsPlugin extends Plugin {
             '--autofit-close-button-padding': `${this.settings.closeButtonPadding}px`,
             '--autofit-transition-duration': `${this.settings.transitionDuration}ms`,
             '--autofit-icon-width': `${this.settings.iconWidth}px`,
+            '--autofit-icon-display': this.settings.iconWidth > 0 ? 'flex' : 'none', // Hide icon completely when width is 0
             '--autofit-max-width': this.settings.maxWidth > 0 ? `${this.settings.maxWidth}px` : 'none'
         };
 

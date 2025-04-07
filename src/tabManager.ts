@@ -1,4 +1,3 @@
-
 import { TAbstractFile } from 'obsidian';
 import AutoFitTabsPlugin from './main';
 
@@ -9,6 +8,7 @@ export class TabManager {
     private iconObserver: MutationObserver | null = null;
     private measureElement: HTMLSpanElement | null = null;
     private debounceTimeout: number | null = null;
+    private scrollCheckInterval: number | null = null;
     private isAdjustmentQueued = false;
     private isResetting = false;
 
@@ -25,6 +25,7 @@ export class TabManager {
             this.queueHeaderAdjustment();
             this.setupMutationObserver();
             this.setupIconStabilizationObserver();
+            this.setupScrollVisibilityCheck();
         }, 300);
     }
 
@@ -33,6 +34,7 @@ export class TabManager {
         if (this.observer) this.observer.disconnect();
         if (this.iconObserver) this.iconObserver.disconnect();
         if (this.measureElement) this.measureElement.remove();
+        if (this.scrollCheckInterval) window.clearInterval(this.scrollCheckInterval);
 
         // Reset the tab containers to default style (only main editor area)
         const tabContainers = document.querySelectorAll('.workspace-split.mod-vertical.mod-root .workspace-tab-header-container-inner');
@@ -49,6 +51,7 @@ export class TabManager {
             header.classList.add('autofit-cleanup');
             header.classList.remove('autofit-tab');
             header.classList.remove('autofit-max-width');
+            header.classList.remove('out-of-view');
             header.style.removeProperty('--header-width');
             
             setTimeout(() => {
@@ -158,12 +161,39 @@ export class TabManager {
         });
     }
 
+    /**
+     * Sets up a periodic check for tab visibility based on scroll position
+     * This ensures tabs that are out of view don't interfere with UI interactions
+     */
+    private setupScrollVisibilityCheck(): void {
+        // Check initially
+        this.updateTabsVisibility();
+        
+        // Set up periodic checks for tab visibility during scrolling
+        document.querySelectorAll('.workspace-split.mod-vertical.mod-root .workspace-tab-header-container-inner')
+            .forEach(container => {
+                if (container instanceof HTMLElement) {
+                    // Listen for scroll events on container to update visibility
+                    container.addEventListener('scroll', () => {
+                        this.updateTabsVisibility();
+                    }, { passive: true });
+                }
+            });
+        
+        // Also check periodically to catch any missed updates
+        this.scrollCheckInterval = window.setInterval(() => {
+            this.updateTabsVisibility();
+        }, 1000);
+    }
+
     registerEventHandlers(): void {
         // Handle layout changes (like split resizing)
         this.plugin.registerEvent(
             this.plugin.app.workspace.on('layout-change', () => {
                 // Debounce to avoid excessive recalculations during resize
                 this.debounceLayoutChange();
+                // Also update tab visibility after layout changes
+                setTimeout(() => this.updateTabsVisibility(), 300);
             })
         );
 
@@ -182,6 +212,12 @@ export class TabManager {
         // Add click event listener for tab selection
         document.body.addEventListener('click', this.handleTabClick.bind(this));
         this.plugin.register(() => document.body.removeEventListener('click', this.handleTabClick.bind(this)));
+        
+        // Handle window resize events to update tab visibility
+        window.addEventListener('resize', () => {
+            this.updateTabsVisibility();
+        }, { passive: true });
+        this.plugin.register(() => window.removeEventListener('resize', () => this.updateTabsVisibility()));
     }
 
     private debounceLayoutChange(): void {
@@ -295,6 +331,9 @@ export class TabManager {
                 // Use smooth scrolling with a custom animation
                 this.smoothScrollTo(container, container.scrollLeft, Math.max(0, targetScroll), 300);
             }
+            
+            // After scrolling, update the visibility of tabs that may be out of view
+            setTimeout(() => this.updateTabsVisibility(), this.plugin.settings.transitionDuration + 50);
         }
     }
 
@@ -328,6 +367,7 @@ export class TabManager {
             
             requestAnimationFrame(() => {
                 this.adjustAllHeaders();
+                this.updateTabsVisibility();
                 this.isAdjustmentQueued = false;
             });
         }
@@ -449,6 +489,9 @@ export class TabManager {
         // Only scroll to active tab when needed
         if (activeHeader) {
             this.scrollToActiveTab(activeHeader);
+        } else {
+            // Still update tab visibility even if no active tab
+            this.updateTabsVisibility();
         }
     }
 
@@ -462,6 +505,7 @@ export class TabManager {
             // Remove all custom classes and styling
             header.classList.remove('autofit-max-width');
             header.classList.remove('autofit-tab');
+            header.classList.remove('out-of-view');
             header.classList.add('autofit-cleanup');
             header.style.removeProperty('--header-width');
         });
@@ -481,8 +525,49 @@ export class TabManager {
                     header.classList.add('autofit-tab');
                 });
                 this.adjustAllHeaders();
+                this.updateTabsVisibility();
                 this.isResetting = false;
             }, 50);
         }, 100);
+    }
+    
+    /**
+     * Updates the visibility state of tabs based on whether they're in the viewport
+     * Tabs outside the viewport get the 'out-of-view' class which disables pointer events
+     */
+    private updateTabsVisibility(): void {
+        if (this.isResetting) return;
+        
+        document.querySelectorAll('.workspace-split.mod-vertical.mod-root .workspace-tab-header-container-inner')
+            .forEach(container => {
+                if (container instanceof HTMLElement) {
+                    const containerRect = container.getBoundingClientRect();
+                    const containerLeft = containerRect.left;
+                    const containerRight = containerRect.right;
+                    
+                    // Get all tabs within this container
+                    const tabs = Array.from(container.querySelectorAll('.workspace-tab-header.autofit-tab'));
+                    
+                    tabs.forEach(tab => {
+                        if (tab instanceof HTMLElement) {
+                            const tabRect = tab.getBoundingClientRect();
+                            
+                            // A tab is out of view if it's completely to the left of the container
+                            // or completely to the right of the container
+                            const isOutOfView = (
+                                tabRect.right < containerLeft || 
+                                tabRect.left > containerRight
+                            );
+                            
+                            // Apply or remove the class based on visibility
+                            if (isOutOfView) {
+                                tab.classList.add('out-of-view');
+                            } else {
+                                tab.classList.remove('out-of-view');
+                            }
+                        }
+                    });
+                }
+            });
     }
 }

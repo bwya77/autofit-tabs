@@ -147,6 +147,7 @@
     scrollbar-width: none; /* Hide scrollbar in Firefox */
     display: flex;
     flex-wrap: nowrap;
+    position: relative; /* Needed for tab positioning */
 }
 
 /* Hide scrollbar in Webkit browsers - only main editor tabs */
@@ -184,6 +185,18 @@
 .workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-tab-list {
     flex-wrap: nowrap !important;
     display: flex !important;
+}
+
+/* Ensure tabs outside of the visible container area don't interfere with interactions */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab.out-of-view {
+    visibility: hidden;
+    pointer-events: none !important;
+}
+
+/* Add a class to specifically fix the draggable area problem */
+.workspace-split.mod-vertical.mod-root .mod-top-left-space .workspace-tab-header-container {
+    position: relative;
+    z-index: 5; /* Ensure it stays above hidden tabs */
 }
 
 /* Fix position of close button to prevent jitter when icon width is 0 */

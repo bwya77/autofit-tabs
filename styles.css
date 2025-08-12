@@ -44,6 +44,15 @@
     transition-property: width, min-width, max-width;
     transition-duration: var(--autofit-transition-duration);
     transition-timing-function: ease-in-out;
+    will-change: width;
+}
+
+/* Synchronize transitions for all child elements */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner,
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon,
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
+    transition: inherit;
+    will-change: transform;
 }
 
 /* Prevent icon swapping/flashing during tab transitions */
@@ -58,10 +67,13 @@
     width: var(--header-width) !important;
     min-width: var(--header-width) !important;
     max-width: var(--header-width) !important;
-    transition: all var(--autofit-transition-duration) ease-in-out !important;
+    transition: width var(--autofit-transition-duration) ease-in-out,
+                min-width var(--autofit-transition-duration) ease-in-out,
+                max-width var(--autofit-transition-duration) ease-in-out !important;
     position: relative;
     /* Reset some defaults to ensure proper layout */
     display: flex !important;
+    contain: layout style;
 }
 
 /* Prevent icon changes during transitions */
@@ -116,7 +128,6 @@
     width: 100%;
     padding-left: var(--autofit-left-padding);
     position: relative;
-    transition: all var(--autofit-transition-duration) ease-in-out !important;
 }
 
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {

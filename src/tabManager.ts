@@ -20,13 +20,27 @@ export class TabManager {
         this.setupMeasureElement();
         this.registerEventHandlers();
         
-        // Initial adjustment to get tabs sized correctly
-        setTimeout(() => {
-            this.queueHeaderAdjustment();
+        // Use requestAnimationFrame for initial setup to ensure DOM is ready
+        requestAnimationFrame(() => {
+            // Pre-calculate all tab widths in a single batch
+            this.preCalculateAllTabWidths();
             this.setupMutationObserver();
             this.setupIconStabilizationObserver();
             this.setupScrollVisibilityCheck();
-        }, 300);
+            // Now apply the adjustments
+            this.queueHeaderAdjustment();
+        });
+    }
+    
+    private preCalculateAllTabWidths(): void {
+        const headers = this.getAllHeaders();
+        headers.forEach(header => {
+            const headerKey = this.getHeaderKey(header);
+            if (!this.tabWidthCache.has(headerKey)) {
+                const width = this.calculateHeaderWidth(header);
+                this.tabWidthCache.set(headerKey, width);
+            }
+        });
     }
 
     cleanup(): void {
@@ -365,9 +379,10 @@ export class TabManager {
         if (!this.isAdjustmentQueued) {
             this.isAdjustmentQueued = true;
             
+            // Use a single requestAnimationFrame for batching
             requestAnimationFrame(() => {
                 this.adjustAllHeaders();
-                this.updateTabsVisibility();
+                // updateTabsVisibility is now called inside adjustAllHeaders
                 this.isAdjustmentQueued = false;
             });
         }
@@ -445,62 +460,92 @@ export class TabManager {
         const newCache = new Map<string, number>();
         let activeHeader: HTMLElement | null = null;
 
-        headers.forEach(header => {
-            // Check if tab is pinned and should be ignored
-            if (this.plugin.settings.ignorePinnedTabs) {
-                const isPinned = header.querySelector('.workspace-tab-header-status-icon.mod-pinned');
+        // Batch all DOM reads first to avoid layout thrashing
+        const headerData = headers.map(header => {
+            const headerKey = this.getHeaderKey(header);
+            const isPinned = this.plugin.settings.ignorePinnedTabs ? 
+                header.querySelector('.workspace-tab-header-status-icon.mod-pinned') : null;
+            const isActive = header.classList.contains('is-active');
+            const cachedWidth = this.tabWidthCache.get(headerKey);
+            const needsRecalc = cachedWidth === undefined || isActive;
+            
+            return {
+                header,
+                headerKey,
+                isPinned: !!isPinned,
+                isActive,
+                cachedWidth,
+                needsRecalc
+            };
+        });
+
+        // Calculate widths for headers that need it
+        headerData.forEach(data => {
+            if (data.needsRecalc && !data.isPinned) {
+                data.cachedWidth = this.calculateHeaderWidth(data.header);
+            }
+        });
+
+        // Now batch all DOM writes together
+        requestAnimationFrame(() => {
+            headerData.forEach(data => {
+                const { header, headerKey, isPinned, isActive, cachedWidth } = data;
+                
                 if (isPinned) {
                     // Remove autofit classes and styles if they were previously applied
                     header.classList.remove('autofit-tab', 'autofit-max-width');
                     header.style.removeProperty('--header-width');
-                    return; // Skip this tab
+                    return;
                 }
-            }
-            
-            const headerKey = this.getHeaderKey(header);
-            
-            // Lock the icon state during transitions
-            const iconElement = header.querySelector('.workspace-tab-header-inner-icon');
-            if (iconElement instanceof HTMLElement) {
-                iconElement.style.pointerEvents = 'none';
-                // Force hardware acceleration
-                iconElement.style.transform = 'translateZ(0)';
-            }
-            
-            // Only recalculate width if not in cache or tab is active
-            let width = this.tabWidthCache.get(headerKey);
-            if (width === undefined || header.classList.contains('is-active')) {
-                width = this.calculateHeaderWidth(header);
-            }
-            
-            header.classList.add('autofit-tab');
-            header.style.setProperty('--header-width', `${width}px`);
-            newCache.set(headerKey, width);
-            
-            // Apply maxWidth class if the setting is enabled
-            if (this.plugin.settings.maxWidth > 0 && width >= this.plugin.settings.maxWidth) {
-                header.classList.add('autofit-max-width');
-                // Apply a slightly larger max-width to allow for more text visibility
-                width = Math.min(width, this.plugin.settings.maxWidth + 20);
+                
+                const width = cachedWidth!;
+                
+                // Lock all child elements to prevent intermediate states
+                const innerElements = header.querySelectorAll('.workspace-tab-header-inner, .workspace-tab-header-inner-icon, .workspace-tab-header-inner-title');
+                innerElements.forEach(el => {
+                    if (el instanceof HTMLElement) {
+                        el.style.transition = 'none';
+                    }
+                });
+                
+                // Apply all changes at once
+                header.classList.add('autofit-tab');
                 header.style.setProperty('--header-width', `${width}px`);
-            } else {
-                header.classList.remove('autofit-max-width');
-            }
+                newCache.set(headerKey, width);
+                
+                // Apply maxWidth class if the setting is enabled
+                if (this.plugin.settings.maxWidth > 0 && width >= this.plugin.settings.maxWidth) {
+                    header.classList.add('autofit-max-width');
+                    const adjustedWidth = Math.min(width, this.plugin.settings.maxWidth + 20);
+                    header.style.setProperty('--header-width', `${adjustedWidth}px`);
+                } else {
+                    header.classList.remove('autofit-max-width');
+                }
+                
+                if (isActive) {
+                    activeHeader = header;
+                }
+                
+                // Re-enable transitions after a brief delay
+                setTimeout(() => {
+                    innerElements.forEach(el => {
+                        if (el instanceof HTMLElement) {
+                            el.style.transition = '';
+                        }
+                    });
+                }, 10);
+            });
+
+            this.tabWidthCache = newCache;
             
-            if (header.classList.contains('is-active')) {
-                activeHeader = header;
+            // Only scroll to active tab when needed
+            if (activeHeader) {
+                this.scrollToActiveTab(activeHeader);
+            } else {
+                // Still update tab visibility even if no active tab
+                this.updateTabsVisibility();
             }
         });
-
-        this.tabWidthCache = newCache;
-        
-        // Only scroll to active tab when needed
-        if (activeHeader) {
-            this.scrollToActiveTab(activeHeader);
-        } else {
-            // Still update tab visibility even if no active tab
-            this.updateTabsVisibility();
-        }
     }
 
     resetTabs(isMaxWidthChanged: boolean): void {

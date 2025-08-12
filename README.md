@@ -13,10 +13,10 @@ Automatically adjusts tab header widths in real-time to perfectly fit each tab's
 - **Resource Efficient**: Uses caching to minimize performance impact
 - **Clean Interface**: Maintains Obsidian's sleek look and feel
 - **Max Width**: Set a maximum width for tabs to prevent excessive resizing
-- **Close Button**: Customize the close button width and padding
-- **Icon Padding**: Adjust the space before the tab icon
-- **Icon Right Margin**: Set the space between icon and text
-- **Close Button Padding**: Adjust the space before the close button
+- **Ignore Pinned Tabs**: Option to keep pinned tabs with default Obsidian behavior
+- **Hide Tab Icons**: Option to remove all icons from tabs for a cleaner look
+- **Close Button Customization**: Adjust padding before and after the close button
+- **Icon Configuration**: Customize icon width and left padding
 - **Transition Duration**: Set how fast tabs animate when resizing
 - **Scrolling Tab Bars**: Enables tabs to be scrolled left and right when they exceed the available space
 - **Auto Center Tabs**: When clicking a tab that is off-screen, the tab will automatically scroll into view
@@ -48,10 +48,13 @@ You can customize the following settings in the plugin options:
 
 ### General
 
-| Setting              | Description                                     | Default |
-| -------------------- | ----------------------------------------------- | ------- |
-| Close button padding | Space in pixels before close button             | 0       |
-| Transition duration  | Duration in milliseconds for smooth transitions | 275     |
+| Setting                      | Description                                     | Default |
+| ---------------------------- | ----------------------------------------------- | ------- |
+| Close button left padding    | Space in pixels before close button            | 30      |
+| Close button right padding   | Space in pixels after close button             | 8       |
+| Transition duration          | Duration in milliseconds for smooth transitions | 375     |
+| Ignore pinned tabs           | Do not modify pinned tabs (keeps default behavior) | false   |
+| Hide tab icons               | Hide all icons in tabs                         | false   |
 
 ### Basic dimensions
 
@@ -59,15 +62,13 @@ You can customize the following settings in the plugin options:
 | ------------------ | ----------------------------------------------- | ------- |
 | Minimum width      | Minimum width in pixels for very short titles   | 40      |
 | Max width          | Maximum width in pixels for tabs (0 to disable) | 0       |
-| Close button width | Width in pixels for the tab close button        | 28      |
-| Left padding       | Padding in pixels before the icon               | 12      |
 
 ### Icons
 
 | Setting           | Description                           | Default |
 | ----------------- | ------------------------------------- | ------- |
 | Icon width        | Width in pixels for tab icons         | 20      |
-| Icon right margin | Space in pixels between icon and text | 0       |
+| Left padding      | Padding in pixels before the icon     | 12      |
 
 ## Compatibility
 

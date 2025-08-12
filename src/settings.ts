@@ -54,6 +54,17 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
                     }));
         });
 
+        // Add ignore pinned tabs toggle
+        new Setting(container)
+            .setName('Ignore pinned tabs')
+            .setDesc('Do not modify pinned tabs (keeps default behavior)')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.ignorePinnedTabs)
+                .onChange(async (value) => {
+                    this.plugin.settings.ignorePinnedTabs = value;
+                    await this.plugin.saveSettings();
+                }));
+
         this.createSettingsSection(container, 'Basic dimensions', [
             {
                 name: 'Minimum width',

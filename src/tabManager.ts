@@ -448,6 +448,17 @@ export class TabManager {
         let activeHeader: HTMLElement | null = null;
 
         headers.forEach(header => {
+            // Check if tab is pinned and should be ignored
+            if (this.plugin.settings.ignorePinnedTabs) {
+                const isPinned = header.querySelector('.workspace-tab-header-status-icon.mod-pinned');
+                if (isPinned) {
+                    // Remove autofit classes and styles if they were previously applied
+                    header.classList.remove('autofit-tab', 'autofit-max-width');
+                    header.style.removeProperty('--header-width');
+                    return; // Skip this tab
+                }
+            }
+            
             const headerKey = this.getHeaderKey(header);
             
             // Lock the icon state during transitions

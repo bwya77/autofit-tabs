@@ -7,7 +7,8 @@ export interface PluginSettings {
     transitionDuration: number;
     iconWidth: number;
     maxWidth: number;
-    [key: string]: number; // Index signature to allow string indexing
+    ignorePinnedTabs: boolean;
+    [key: string]: number | boolean; // Index signature to allow string indexing
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -17,5 +18,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     closeButtonRightPadding: 8,
     transitionDuration: 375,
     iconWidth: 20,
-    maxWidth: 0 // 0 means disabled
+    maxWidth: 0, // 0 means disabled
+    ignorePinnedTabs: false
 } as PluginSettings;

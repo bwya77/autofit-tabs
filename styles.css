@@ -40,7 +40,7 @@
 }
 
 /* Make sure we're respecting the transition duration setting */
-.workspace-split.mod-vertical.mod-root .workspace-tab-header {
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab {
     transition-property: width, min-width, max-width;
     transition-duration: var(--autofit-transition-duration);
     transition-timing-function: ease-in-out;
@@ -167,8 +167,8 @@
     max-width: calc(100% - var(--autofit-close-button-left-padding) - 8px);
 }
 
-/* Add padding-right to all tab titles to ensure space for close button */
-.workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-title {
+/* Add padding-right to autofit tab titles to ensure space for close button */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
     padding-right: var(--autofit-close-button-left-padding);
 }
 
@@ -198,7 +198,7 @@
 }
 
 /* Fix position of close button to prevent jitter when icon width is 0 */
-.workspace-split.mod-vertical.mod-root .workspace-tab-header .workspace-tab-header-inner-close-button {
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-close-button {
     position: absolute;
     right: 0;
     top: 50%;

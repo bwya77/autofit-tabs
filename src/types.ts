@@ -1,10 +1,9 @@
 
 export interface PluginSettings {
     minWidth: number;
-    closeButtonWidth: number;
     leftPadding: number;
-    iconRightMargin: number;
-    closeButtonPadding: number;
+    closeButtonLeftPadding: number;
+    closeButtonRightPadding: number;
     transitionDuration: number;
     iconWidth: number;
     maxWidth: number;
@@ -13,11 +12,10 @@ export interface PluginSettings {
 
 export const DEFAULT_SETTINGS: PluginSettings = {
     minWidth: 40,
-    closeButtonWidth: 28,
     leftPadding: 12,
-    iconRightMargin: 0,
-    closeButtonPadding: 0,
-    transitionDuration: 275,
+    closeButtonLeftPadding: 30,
+    closeButtonRightPadding: 8,
+    transitionDuration: 375,
     iconWidth: 20,
     maxWidth: 0 // 0 means disabled
 } as PluginSettings;

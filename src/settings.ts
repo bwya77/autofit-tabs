@@ -22,9 +22,14 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
         // General settings at the top without a heading
         [
             {
-                name: 'Close button padding',
+                name: 'Close button left padding',
                 desc: 'Space in pixels before close button',
-                prop: 'closeButtonPadding' as keyof PluginSettings
+                prop: 'closeButtonLeftPadding' as keyof PluginSettings
+            },
+            {
+                name: 'Close button right padding',
+                desc: 'Space in pixels after close button',
+                prop: 'closeButtonRightPadding' as keyof PluginSettings
             },
             {
                 name: 'Transition duration',
@@ -59,16 +64,6 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
                 name: 'Max width',
                 desc: 'Maximum width in pixels for tabs (0 to disable)',
                 prop: 'maxWidth' as keyof PluginSettings
-            },
-            {
-                name: 'Close button width',
-                desc: 'Width in pixels for the tab close button',
-                prop: 'closeButtonWidth' as keyof PluginSettings
-            },
-            {
-                name: 'Left padding',
-                desc: 'Padding in pixels before the icon',
-                prop: 'leftPadding' as keyof PluginSettings
             }
         ]);
 
@@ -79,9 +74,9 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
                 prop: 'iconWidth' as keyof PluginSettings
             },
             {
-                name: 'Icon right margin',
-                desc: 'Space in pixels between icon and text',
-                prop: 'iconRightMargin' as keyof PluginSettings
+                name: 'Left padding',
+                desc: 'Padding in pixels before the icon',
+                prop: 'leftPadding' as keyof PluginSettings
             }
         ]);
     }

@@ -418,10 +418,9 @@ export class TabManager {
         const calculatedWidth = Math.ceil(Math.max(
             this.plugin.settings.leftPadding +
             iconSpaceNeeded +
-            this.plugin.settings.iconRightMargin +
             textWidth +
-            this.plugin.settings.closeButtonPadding +
-            this.plugin.settings.closeButtonWidth,
+            this.plugin.settings.closeButtonLeftPadding +
+            this.plugin.settings.closeButtonRightPadding,
             this.plugin.settings.minWidth
         ));
         

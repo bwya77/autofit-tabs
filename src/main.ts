@@ -28,10 +28,9 @@ export default class AutoFitTabsPlugin extends Plugin {
     updateCSSVariables(): void {
         const cssVars: Record<string, string> = {
             '--autofit-min-width': `${this.settings.minWidth}px`,
-            '--autofit-close-button-width': `${this.settings.closeButtonWidth}px`,
             '--autofit-left-padding': `${this.settings.leftPadding}px`,
-            '--autofit-icon-right-margin': `${this.settings.iconRightMargin}px`,
-            '--autofit-close-button-padding': `${this.settings.closeButtonPadding}px`,
+            '--autofit-close-button-left-padding': `${this.settings.closeButtonLeftPadding}px`,
+            '--autofit-close-button-right-padding': `${this.settings.closeButtonRightPadding}px`,
             '--autofit-transition-duration': `${this.settings.transitionDuration}ms`,
             '--autofit-icon-width': `${this.settings.iconWidth}px`,
             '--autofit-icon-display': this.settings.iconWidth > 0 ? 'flex' : 'none', // Hide icon completely when width is 0

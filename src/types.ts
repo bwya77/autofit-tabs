@@ -8,6 +8,7 @@ export interface PluginSettings {
     iconWidth: number;
     maxWidth: number;
     ignorePinnedTabs: boolean;
+    hideTabIcons: boolean;
     [key: string]: number | boolean; // Index signature to allow string indexing
 }
 
@@ -19,5 +20,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     transitionDuration: 375,
     iconWidth: 20,
     maxWidth: 0, // 0 means disabled
-    ignorePinnedTabs: false
+    ignorePinnedTabs: false,
+    hideTabIcons: false
 } as PluginSettings;

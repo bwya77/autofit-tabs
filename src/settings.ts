@@ -90,6 +90,17 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
                 prop: 'leftPadding' as keyof PluginSettings
             }
         ]);
+
+        // Add hide tab icons toggle
+        new Setting(container)
+            .setName('Hide tab icons')
+            .setDesc('Hide all icons in tabs')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.hideTabIcons)
+                .onChange(async (value) => {
+                    this.plugin.settings.hideTabIcons = value;
+                    await this.plugin.saveSettings();
+                }));
     }
 
     private createSettingsSection(container: HTMLElement, title: string, settings: Array<{

@@ -409,11 +409,9 @@ export class TabManager {
         );
         
         // Calculate width without maxWidth constraint
-        // When iconWidth is 0, we still need to reserve space for the close button
-        // to prevent layout jitter when hovering
-        const iconSpaceNeeded = this.plugin.settings.iconWidth > 0 ? 
-            this.plugin.settings.iconWidth : 
-            0;
+        // When hideTabIcons is true or iconWidth is 0, don't reserve space for icons
+        const iconSpaceNeeded = this.plugin.settings.hideTabIcons ? 0 :
+            (this.plugin.settings.iconWidth > 0 ? this.plugin.settings.iconWidth : 0);
             
         const calculatedWidth = Math.ceil(Math.max(
             this.plugin.settings.leftPadding +

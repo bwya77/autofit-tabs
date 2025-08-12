@@ -205,3 +205,36 @@
     transform: translateY(-50%);
     margin-right: var(--autofit-close-button-right-padding) !important;
 }
+
+/* Hide tab icons when setting is enabled - only in main editor tabs */
+body.autofit-hide-tab-icons .workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-icon {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide the img elements inside the icon container - only in main editor tabs */
+body.autofit-hide-tab-icons .workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-icon img {
+    width: 0px !important;
+    height: 0px !important;
+    display: none !important;
+}
+
+/* Also hide svg icons if present - only in main editor tabs */
+body.autofit-hide-tab-icons .workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-icon svg {
+    width: 0px !important;
+    height: 0px !important;
+    display: none !important;
+}
+
+/* Adjust left padding when icons are hidden - only in main editor tabs */
+body.autofit-hide-tab-icons .workspace-split.mod-vertical.mod-root .workspace-tab-header-inner {
+    padding-left: var(--autofit-left-padding) !important;
+}
+
+/* Ensure title takes full space when icons are hidden - only in main editor tabs */
+body.autofit-hide-tab-icons .workspace-split.mod-vertical.mod-root .workspace-tab-header-inner-title {
+    margin-left: 0 !important;
+}

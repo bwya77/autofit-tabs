@@ -465,6 +465,8 @@ export class TabManager {
             const headerKey = this.getHeaderKey(header);
             const isPinned = this.plugin.settings.ignorePinnedTabs ? 
                 header.querySelector('.workspace-tab-header-status-icon.mod-pinned') : null;
+            const isWebLink = this.plugin.settings.ignoreWebLinks ? 
+                header.getAttribute('data-type') === 'webviewer' : false;
             const isActive = header.classList.contains('is-active');
             const cachedWidth = this.tabWidthCache.get(headerKey);
             const needsRecalc = cachedWidth === undefined || isActive;
@@ -473,6 +475,7 @@ export class TabManager {
                 header,
                 headerKey,
                 isPinned: !!isPinned,
+                isWebLink,
                 isActive,
                 cachedWidth,
                 needsRecalc
@@ -481,7 +484,7 @@ export class TabManager {
 
         // Calculate widths for headers that need it
         headerData.forEach(data => {
-            if (data.needsRecalc && !data.isPinned) {
+            if (data.needsRecalc && !data.isPinned && !data.isWebLink) {
                 data.cachedWidth = this.calculateHeaderWidth(data.header);
             }
         });
@@ -489,9 +492,9 @@ export class TabManager {
         // Now batch all DOM writes together
         requestAnimationFrame(() => {
             headerData.forEach(data => {
-                const { header, headerKey, isPinned, isActive, cachedWidth } = data;
+                const { header, headerKey, isPinned, isWebLink, isActive, cachedWidth } = data;
                 
-                if (isPinned) {
+                if (isPinned || isWebLink) {
                     // Remove autofit classes and styles if they were previously applied
                     header.classList.remove('autofit-tab', 'autofit-max-width');
                     header.style.removeProperty('--header-width');

@@ -65,6 +65,17 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
+        // Add ignore web links toggle
+        new Setting(container)
+            .setName('Ignore web links')
+            .setDesc('Do not modify tabs that are web links (keeps default behavior)')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.ignoreWebLinks)
+                .onChange(async (value) => {
+                    this.plugin.settings.ignoreWebLinks = value;
+                    await this.plugin.saveSettings();
+                }));
+
         this.createSettingsSection(container, 'Basic dimensions', [
             {
                 name: 'Minimum width',

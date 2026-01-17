@@ -11,6 +11,7 @@ export class TabManager {
     private scrollCheckInterval: number | null = null;
     private isAdjustmentQueued = false;
     private isResetting = false;
+    private closeInProgress = false;
 
     constructor(plugin: AutoFitTabsPlugin) {
         this.plugin = plugin;
@@ -88,10 +89,23 @@ export class TabManager {
             // No workspace tabs found in main content area
             return;
         }
-        
+
         this.observer = new MutationObserver((mutations) => {
+            let tabWasRemoved = false;
+
             // Only trigger on relevant tab changes, not every DOM change
             for (const mutation of mutations) {
+                // Check if a tab was removed (for close animation)
+                if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+                    for (const node of Array.from(mutation.removedNodes)) {
+                        if (node instanceof HTMLElement &&
+                            node.classList.contains('workspace-tab-header')) {
+                            tabWasRemoved = true;
+                            break;
+                        }
+                    }
+                }
+
                 // Only care about specific tab-related changes
                 if (mutation.target && mutation.target instanceof Element) {
                     // ONLY target tabs in the main editor area
@@ -101,18 +115,21 @@ export class TabManager {
                     // Only check for main editor area tabs (not sidedock/left pane)
                     const isTabElement = (
                         (mutation.target.closest('.workspace-split.mod-vertical.mod-root .workspace-tab-header')) ||
-                        (mutation.target.classList.contains('workspace-tab-header-inner-title') && 
+                        (mutation.target.classList.contains('workspace-tab-header-inner-title') &&
                          mutation.target.closest('.workspace-split.mod-vertical.mod-root'))
                     );
-                    
+
                     if (isTabElement) {
-                        this.queueHeaderAdjustment();
+                        // Don't recalculate when a tab was just removed - remaining tabs keep their widths
+                        if (!tabWasRemoved) {
+                            this.queueHeaderAdjustment();
+                        }
                         return;
                     }
-                    
+
                     // Check for theme changes
-                    if (mutation.target === document.body && 
-                        mutation.type === 'attributes' && 
+                    if (mutation.target === document.body &&
+                        mutation.type === 'attributes' &&
                         mutation.attributeName === 'class') {
                         this.tabWidthCache.clear();
                         this.queueHeaderAdjustment();
@@ -120,6 +137,9 @@ export class TabManager {
                     }
                 }
             }
+
+            // When a tab is removed, we don't need to recalculate remaining tabs
+            // They keep their widths and just reposition via flexbox
         });
         
         // Only observe main editor tab containers for changes
@@ -226,6 +246,18 @@ export class TabManager {
         // Add click event listener for tab selection
         document.body.addEventListener('click', this.handleTabClick.bind(this));
         this.plugin.register(() => document.body.removeEventListener('click', this.handleTabClick.bind(this)));
+
+        // Add click event listener for close button to handle closing animation
+        document.body.addEventListener('click', this.handleCloseClick.bind(this), true);
+        this.plugin.register(() => document.body.removeEventListener('click', this.handleCloseClick.bind(this), true));
+
+        // Also handle middle-click on tabs (common way to close tabs)
+        document.body.addEventListener('auxclick', this.handleMiddleClick.bind(this), true);
+        this.plugin.register(() => document.body.removeEventListener('auxclick', this.handleMiddleClick.bind(this), true));
+
+        // Handle keyboard shortcuts for closing tabs (Ctrl+W, Cmd+W)
+        document.addEventListener('keydown', this.handleKeyDown.bind(this), true);
+        this.plugin.register(() => document.removeEventListener('keydown', this.handleKeyDown.bind(this), true));
         
         // Handle window resize events to update tab visibility
         window.addEventListener('resize', () => {
@@ -248,7 +280,7 @@ export class TabManager {
     private handleTabClick(event: MouseEvent): void {
         const target = event.target as HTMLElement;
         const tabHeader = target?.closest('.workspace-split.mod-vertical.mod-root .workspace-tab-header');
-        
+
         if (!tabHeader) {
             return;
         }
@@ -262,13 +294,131 @@ export class TabManager {
         }
     }
 
+    /**
+     * Handles click on close button - intercepts, animates, then closes via API
+     */
+    private handleCloseClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement;
+        if (!target) return;
+
+        // Check if clicking on a close button in main editor area
+        const closeButton = target.closest('.workspace-tab-header-inner-close-button');
+        if (!closeButton) return;
+
+        const tabHeader = closeButton.closest('.workspace-split.mod-vertical.mod-root .workspace-tab-header') as HTMLElement;
+        if (!tabHeader) return;
+
+        // Prevent Obsidian's close handler from running
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.initiateClose(tabHeader);
+    }
+
+    /**
+     * Handles middle-click on tabs to start the closing animation
+     */
+    private handleMiddleClick(event: MouseEvent): void {
+        // Middle click is button 1
+        if (event.button !== 1) return;
+
+        const target = event.target as HTMLElement;
+        const tabHeader = target?.closest('.workspace-split.mod-vertical.mod-root .workspace-tab-header') as HTMLElement;
+        if (!tabHeader) return;
+
+        // Prevent default middle-click behavior
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.initiateClose(tabHeader);
+    }
+
+    /**
+     * Handles keyboard shortcuts for closing tabs (Ctrl+W, Cmd+W)
+     */
+    private handleKeyDown(event: KeyboardEvent): void {
+        // Check for Ctrl+W (Windows/Linux) or Cmd+W (Mac)
+        if ((event.ctrlKey || event.metaKey) && event.key === 'w') {
+            const activeTab = document.querySelector('.workspace-split.mod-vertical.mod-root .workspace-tab-header.is-active') as HTMLElement;
+            if (!activeTab) return;
+
+            // Prevent default close behavior
+            event.stopPropagation();
+            event.preventDefault();
+
+            this.initiateClose(activeTab);
+        }
+    }
+
+    /**
+     * Closes a leaf by matching its tab header element
+     */
+    private closeLeafByTabHeader(tabHeader: HTMLElement): void {
+        // Get all leaves
+        const allLeaves: any[] = [];
+        this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+            allLeaves.push(leaf);
+        });
+
+        // Try to find the leaf by matching the tab element
+        for (const leaf of allLeaves) {
+            if (leaf.tabHeaderEl === tabHeader) {
+                leaf.detach();
+                return;
+            }
+        }
+
+        // Fallback: if the tab is still marked as active, close the active leaf
+        if (tabHeader.classList.contains('is-active')) {
+            const activeLeaf = this.plugin.app.workspace.activeLeaf;
+            if (activeLeaf) {
+                activeLeaf.detach();
+            }
+        }
+    }
+
+    /**
+     * Initiates the close sequence with animation
+     */
+    private initiateClose(tabHeader: HTMLElement): void {
+        if (this.closeInProgress) return;
+        this.closeInProgress = true;
+
+        // Start the closing animation
+        this.startClosingAnimation(tabHeader);
+
+        // After animation, close the tab
+        const duration = this.plugin.settings.transitionDuration;
+        setTimeout(() => {
+            this.closeLeafByTabHeader(tabHeader);
+            // Keep the flag on longer to prevent any events from triggering recalc
+            setTimeout(() => {
+                this.closeInProgress = false;
+            }, 300);
+        }, duration);
+    }
+
+    /**
+     * Starts the closing animation - shrinks the tab to 0
+     */
+    private startClosingAnimation(tabHeader: HTMLElement): void {
+        if (this.isResetting) return;
+
+        // Add closing class and shrink to 0
+        tabHeader.classList.add('autofit-closing');
+        tabHeader.style.setProperty('--header-width', '0px');
+    }
+
     private handleFileOpen(): void {
+        // Skip during close animation to prevent jitter
+        if (this.closeInProgress) return;
+
         const activeHeaders = document.querySelectorAll('.workspace-split.mod-vertical.mod-root .workspace-tab-header.is-active');
         activeHeaders.forEach(header => {
             if (header instanceof HTMLElement) {
                 // Handle icon flickering issue specifically
                 this.stabilizeIcon(header);
-                
+
                 setTimeout(() => {
                     if (!this.tabWidthCache.has(this.getHeaderKey(header))) {
                         this.queueHeaderAdjustment();
@@ -376,11 +526,19 @@ export class TabManager {
     }
 
     queueHeaderAdjustment(): void {
+        // Skip during close to prevent jitter
+        if (this.closeInProgress) return;
+
         if (!this.isAdjustmentQueued) {
             this.isAdjustmentQueued = true;
-            
+
             // Use a single requestAnimationFrame for batching
             requestAnimationFrame(() => {
+                // Double-check we're not closing
+                if (this.closeInProgress) {
+                    this.isAdjustmentQueued = false;
+                    return;
+                }
                 this.adjustAllHeaders();
                 // updateTabsVisibility is now called inside adjustAllHeaders
                 this.isAdjustmentQueued = false;

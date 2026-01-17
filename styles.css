@@ -190,6 +190,21 @@
     overflow: hidden;
 }
 
+/* Closing animation - collapse completely */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-closing {
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    min-width: 0 !important;
+}
+
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-closing .workspace-tab-header-inner {
+    visibility: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 /* Ensure tabs don't wrap - only main editor tabs */
 .workspace-split.mod-vertical.mod-root .workspace-tabs .workspace-tab-header-tab-list {
     flex-wrap: nowrap !important;

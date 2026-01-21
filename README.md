@@ -1,5 +1,7 @@
 # AutoFit Tabs for Obsidian
 
+![Github All Releases](https://img.shields.io/github/downloads/bwya77/autofit-tabs/total.svg)
+
 Automatically adjusts tab header widths in real-time to perfectly fit each tab's title content while maintaining a clean, seamless interface that prevents awkward text truncation and ensures optimal readability of your document titles.
 
 ![Demo video](/images/demo.gif) 

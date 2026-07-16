@@ -1,7 +1,23 @@
 
-import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { DEFAULT_SETTINGS, PluginSettings } from './types';
+import {
+    App,
+    PluginSettingTab,
+    requireApiVersion,
+    Setting,
+    type SettingDefinition,
+    type SettingDefinitionItem,
+} from 'obsidian';
+import { DEFAULT_SETTINGS, type PluginSettings } from './types';
 import AutoFitTabsPlugin from './main';
+
+type NumericSettingKey =
+    | 'closeButtonLeftPadding'
+    | 'closeButtonRightPadding'
+    | 'iconWidth'
+    | 'leftPadding'
+    | 'maxWidth'
+    | 'minWidth'
+    | 'transitionDuration';
 
 export class AutoFitTabsSettingTab extends PluginSettingTab {
     plugin: AutoFitTabsPlugin;
@@ -9,6 +25,108 @@ export class AutoFitTabsSettingTab extends PluginSettingTab {
     constructor(app: App, plugin: AutoFitTabsPlugin) {
         super(app, plugin);
         this.plugin = plugin;
+    }
+
+    getSettingDefinitions(): SettingDefinitionItem[] {
+        if (!requireApiVersion('1.13.0')) {
+            return [];
+        }
+
+        const numberSetting = (
+            name: string,
+            desc: string,
+            key: NumericSettingKey,
+        ): SettingDefinition => ({
+            name,
+            desc: `${desc} (default: ${DEFAULT_SETTINGS[key]})`,
+            control: {
+                type: 'number',
+                key,
+                defaultValue: Number(DEFAULT_SETTINGS[key]),
+                min: 0,
+            },
+        });
+
+        return [
+            numberSetting(
+                'Close button left padding',
+                'Space in pixels before close button',
+                'closeButtonLeftPadding',
+            ),
+            numberSetting(
+                'Close button right padding',
+                'Space in pixels after close button',
+                'closeButtonRightPadding',
+            ),
+            numberSetting(
+                'Transition duration',
+                'Duration in milliseconds for smooth transitions',
+                'transitionDuration',
+            ),
+            {
+                name: 'Ignore pinned tabs',
+                desc: 'Do not modify pinned tabs (keeps default behavior)',
+                control: { type: 'toggle', key: 'ignorePinnedTabs' },
+            },
+            {
+                name: 'Ignore web links',
+                desc: 'Do not modify tabs that are web links (keeps default behavior)',
+                control: { type: 'toggle', key: 'ignoreWebLinks' },
+            },
+            {
+                type: 'group',
+                heading: 'Basic dimensions',
+                items: [
+                    numberSetting(
+                        'Minimum width',
+                        'Minimum width in pixels for very short titles',
+                        'minWidth',
+                    ),
+                    numberSetting(
+                        'Max width',
+                        'Maximum width in pixels for tabs (0 to disable)',
+                        'maxWidth',
+                    ),
+                ],
+            },
+            {
+                type: 'group',
+                heading: 'Icons',
+                items: [
+                    numberSetting(
+                        'Icon width',
+                        'Width in pixels for tab icons',
+                        'iconWidth',
+                    ),
+                    numberSetting(
+                        'Left padding',
+                        'Padding in pixels before the icon',
+                        'leftPadding',
+                    ),
+                    {
+                        name: 'Hide tab icons',
+                        desc: 'Hide all icons in tabs',
+                        control: { type: 'toggle', key: 'hideTabIcons' },
+                    },
+                ],
+            },
+        ];
+    }
+
+    async setControlValue(key: string, value: unknown): Promise<void> {
+        if (!(key in this.plugin.settings)) {
+            return;
+        }
+
+        Reflect.set(this.plugin.settings, key, value);
+        if (
+            key === 'closeButtonLeftPadding' ||
+            key === 'closeButtonRightPadding' ||
+            key === 'transitionDuration'
+        ) {
+            this.plugin.updateCSSVariables();
+        }
+        await this.plugin.saveSettings();
     }
 
     display(): void {

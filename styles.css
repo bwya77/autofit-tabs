@@ -123,17 +123,25 @@
 /* Title styles - fix structure especially when cleaning up max-width tabs */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner,
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-cleanup .workspace-tab-header-inner {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding-left: var(--autofit-left-padding);
-    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: var(--autofit-left-padding) !important;
+    padding-right: var(--autofit-close-button-right-padding, 8px) !important;
+    position: relative !important;
 }
 
+/* Title fills available space and truncates with ellipsis before the close button */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: clip !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    padding-right: 0 !important;
+    margin-right: var(--autofit-close-button-left-padding, 6px) !important;
 }
 
 /* Icon styles - only for root content area */
@@ -171,16 +179,10 @@
     white-space: nowrap !important;
 }
 
-/* Styles for tabs with max-width setting - handle overflow and ensure spacing */
+/* Styles for tabs with max-width setting - overflow is handled by the flex layout */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-max-width .workspace-tab-header-inner-title {
     text-overflow: ellipsis !important;
     overflow: hidden !important;
-    max-width: calc(100% - var(--autofit-close-button-left-padding) - 8px);
-}
-
-/* Add padding-right to autofit tab titles to ensure space for close button */
-.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    padding-right: var(--autofit-close-button-left-padding);
 }
 
 
@@ -223,13 +225,15 @@
     z-index: 5; /* Ensure it stays above hidden tabs */
 }
 
-/* Fix position of close button to prevent jitter when icon width is 0 */
+/* Close button is an in-flow flex item, sits flush at the right edge naturally */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-close-button {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-right: var(--autofit-close-button-right-padding) !important;
+    flex: 0 0 auto !important;
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* Hide tab icons when setting is enabled - only in main editor tabs */

@@ -585,12 +585,18 @@ export class TabManager {
         // When hideTabIcons is true or iconWidth is 0, don't reserve space for icons
         const iconSpaceNeeded = this.plugin.settings.hideTabIcons ? 0 :
             (this.plugin.settings.iconWidth > 0 ? this.plugin.settings.iconWidth : 0);
-            
+
+        // The close button element itself has a physical rendered width (~18px).
+        // closeButtonLeftPadding is treated purely as a visual gap between the title
+        // text and the close button, so it can now be a small value (e.g. 6px).
+        const CLOSE_BUTTON_ELEMENT_WIDTH = 18;
+
         const calculatedWidth = Math.ceil(Math.max(
             this.plugin.settings.leftPadding +
             iconSpaceNeeded +
             textWidth +
             this.plugin.settings.closeButtonLeftPadding +
+            CLOSE_BUTTON_ELEMENT_WIDTH +
             this.plugin.settings.closeButtonRightPadding,
             this.plugin.settings.minWidth
         ));

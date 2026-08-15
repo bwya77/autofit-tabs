@@ -59,12 +59,15 @@ export default class AutoFitTabsPlugin extends Plugin {
         await this.saveData(this.settings);
         this.updateCSSVariables();
         
+        // Clear cached tab widths so all tabs recalculate with new settings
+        this.tabManager.clearCache();
+
         // If max width was disabled, completely reset all tabs
         const isMaxWidthChanged = previousMaxWidth > 0 && this.settings.maxWidth === 0;
         if (isMaxWidthChanged) {
             this.tabManager.resetTabs(isMaxWidthChanged);
         } else {
-            // Just recalculate normally for other setting changes
+            // Recalculate all tabs with updated settings
             this.tabManager.queueHeaderAdjustment();
         }
     }

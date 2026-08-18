@@ -16,8 +16,8 @@ export interface PluginSettings {
 export const DEFAULT_SETTINGS: PluginSettings = {
     minWidth: 40,
     leftPadding: 12,
-    closeButtonLeftPadding: 6,
-    closeButtonRightPadding: 8,
+    closeButtonLeftPadding: 0,
+    closeButtonRightPadding: 30,
     transitionDuration: 375,
     iconWidth: 20,
     maxWidth: 0, // 0 means disabled

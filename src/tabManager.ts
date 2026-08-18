@@ -44,6 +44,10 @@ export class TabManager {
         });
     }
 
+    clearCache(): void {
+        this.tabWidthCache.clear();
+    }
+
     cleanup(): void {
         this.tabWidthCache.clear();
         if (this.observer) this.observer.disconnect();
@@ -558,18 +562,45 @@ export class TabManager {
         return titleElement?.textContent || '';
     }
 
+    private canvasContext: CanvasRenderingContext2D | null = null;
+
     private measureTextWidth(text: string, element: Element): number {
-        if (!this.measureElement) return 0;
-        
         const styles = window.getComputedStyle(element);
-        this.measureElement.style.font = styles.font;
-        this.measureElement.style.letterSpacing = styles.letterSpacing;
-        this.measureElement.style.textTransform = styles.textTransform;
-        this.measureElement.style.fontWeight = styles.fontWeight;
-        this.measureElement.textContent = text;
         
-        // Add a small padding buffer to ensure text fits
-        return Math.ceil(this.measureElement.offsetWidth) + 5;
+        let measuredWidth = 0;
+        try {
+            if (!this.canvasContext) {
+                const canvas = document.createElement('canvas');
+                this.canvasContext = canvas.getContext('2d');
+            }
+            if (this.canvasContext) {
+                const fontStyle = styles.fontStyle || 'normal';
+                const fontWeight = styles.fontWeight || 'normal';
+                const fontSize = styles.fontSize || '14px';
+                const fontFamily = styles.fontFamily || 'sans-serif';
+                this.canvasContext.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+                if ('letterSpacing' in this.canvasContext && styles.letterSpacing && styles.letterSpacing !== 'normal') {
+                    (this.canvasContext as any).letterSpacing = styles.letterSpacing;
+                }
+                measuredWidth = this.canvasContext.measureText(text).width;
+            }
+        } catch {
+            measuredWidth = 0;
+        }
+
+        if ((!measuredWidth || measuredWidth === 0) && this.measureElement) {
+            this.measureElement.style.fontFamily = styles.fontFamily;
+            this.measureElement.style.fontSize = styles.fontSize;
+            this.measureElement.style.fontStyle = styles.fontStyle;
+            this.measureElement.style.fontWeight = styles.fontWeight;
+            this.measureElement.style.letterSpacing = styles.letterSpacing;
+            this.measureElement.style.textTransform = styles.textTransform;
+            this.measureElement.textContent = text;
+            measuredWidth = this.measureElement.getBoundingClientRect().width || this.measureElement.offsetWidth;
+        }
+        
+        // Add safety buffer (8px) to account for subpixel font rendering and padding
+        return Math.ceil(measuredWidth) + 8;
     }
 
     private calculateHeaderWidth(header: HTMLElement): number {
@@ -585,12 +616,18 @@ export class TabManager {
         // When hideTabIcons is true or iconWidth is 0, don't reserve space for icons
         const iconSpaceNeeded = this.plugin.settings.hideTabIcons ? 0 :
             (this.plugin.settings.iconWidth > 0 ? this.plugin.settings.iconWidth : 0);
-            
+
+        // The close button element itself has a physical rendered width (20px).
+        // closeButtonLeftPadding is treated purely as a visual gap between the title
+        // text and the close button, so it can now be a small value (e.g. 5-6px).
+        const CLOSE_BUTTON_ELEMENT_WIDTH = 20;
+
         const calculatedWidth = Math.ceil(Math.max(
             this.plugin.settings.leftPadding +
             iconSpaceNeeded +
             textWidth +
             this.plugin.settings.closeButtonLeftPadding +
+            CLOSE_BUTTON_ELEMENT_WIDTH +
             this.plugin.settings.closeButtonRightPadding,
             this.plugin.settings.minWidth
         ));
@@ -677,8 +714,6 @@ export class TabManager {
                 // Apply maxWidth class if the setting is enabled
                 if (this.plugin.settings.maxWidth > 0 && width >= this.plugin.settings.maxWidth) {
                     header.classList.add('autofit-max-width');
-                    const adjustedWidth = Math.min(width, this.plugin.settings.maxWidth + 20);
-                    header.style.setProperty('--header-width', `${adjustedWidth}px`);
                 } else {
                     header.classList.remove('autofit-max-width');
                 }

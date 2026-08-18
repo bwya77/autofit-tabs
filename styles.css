@@ -117,27 +117,45 @@
     width: var(--header-width) !important;
     min-width: var(--header-width) !important;
     max-width: var(--header-width) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
     position: relative;
 }
 
 /* Title styles - fix structure especially when cleaning up max-width tabs */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner,
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-cleanup .workspace-tab-header-inner {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding-left: var(--autofit-left-padding);
-    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    padding-left: var(--autofit-left-padding) !important;
+    padding-right: var(--autofit-close-button-right-padding, 8px) !important;
+    margin: 0 !important;
+    position: relative !important;
 }
 
+/* Title sizes to fit text, can shrink with ellipsis, with close button directly adjacent */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: clip !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-right: var(--autofit-close-button-left-padding, 6px) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 /* Icon styles - only for root content area */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-icon {
+    flex: 0 0 auto !important;
     width: var(--autofit-icon-width);
     display: var(--autofit-icon-display, flex); /* Use flex by default, none when icon width is 0 */
     align-items: center;
@@ -171,16 +189,10 @@
     white-space: nowrap !important;
 }
 
-/* Styles for tabs with max-width setting - handle overflow and ensure spacing */
+/* Styles for tabs with max-width setting - overflow is handled by the flex layout */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-max-width .workspace-tab-header-inner-title {
     text-overflow: ellipsis !important;
     overflow: hidden !important;
-    max-width: calc(100% - var(--autofit-close-button-left-padding) - 8px);
-}
-
-/* Add padding-right to autofit tab titles to ensure space for close button */
-.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    padding-right: var(--autofit-close-button-left-padding);
 }
 
 
@@ -223,13 +235,21 @@
     z-index: 5; /* Ensure it stays above hidden tabs */
 }
 
-/* Fix position of close button to prevent jitter when icon width is 0 */
+/* Close button is an in-flow flex item, sits flush at the right edge naturally */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-close-button {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-right: var(--autofit-close-button-right-padding) !important;
+    flex: 0 0 20px !important;
+    position: static !important;
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    height: 20px !important;
 }
 
 /* Hide tab icons when setting is enabled - only in main editor tabs */

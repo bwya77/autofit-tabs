@@ -139,18 +139,17 @@
     position: relative !important;
 }
 
-/* Title sizes to fit text, can shrink with ellipsis, with close button directly adjacent */
+/* Title sizes to fit text; overflow is visible by default so JS-measured width is trusted */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
-    flex: 0 1 auto !important;
+    flex: 0 0 auto !important;
     min-width: 0 !important;
-    max-width: 100% !important;
     box-sizing: border-box !important;
     padding: 0 !important;
     margin: 0 !important;
     margin-right: var(--autofit-close-button-left-padding, 6px) !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 
 /* Icon styles - only for root content area */
@@ -189,8 +188,9 @@
     white-space: nowrap !important;
 }
 
-/* Styles for tabs with max-width setting - overflow is handled by the flex layout */
+/* Styles for tabs with max-width setting - truncate with ellipsis when capped */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-max-width .workspace-tab-header-inner-title {
+    flex: 0 1 auto !important;
     text-overflow: ellipsis !important;
     overflow: hidden !important;
 }

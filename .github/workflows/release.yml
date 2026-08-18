@@ -1,0 +1,68 @@
+name: Release Obsidian Plugin
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Bump version
+        id: bump
+        run: |
+          # Read current version from manifest.json
+          CURRENT_VERSION=$(node -p "require('./manifest.json').version")
+          echo "Current version: $CURRENT_VERSION"
+
+          # Increment patch version
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_VERSION="${major}.${minor}.$((patch + 1))"
+          echo "New version: $NEW_VERSION"
+
+          # Update package.json version
+          node -p "const p=require('./package.json'); p.version='$NEW_VERSION'; JSON.stringify(p, null, 2)" > package.json.tmp && mv package.json.tmp package.json
+
+          # Run the existing version-bump script to update manifest.json and versions.json
+          npm_package_version=$NEW_VERSION node version-bump.mjs
+
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json versions.json package.json
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}"
+          git push
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.bump.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+          gh release create "$tag" \
+            --title="$tag" \
+            --generate-notes \
+            main.js manifest.json styles.css

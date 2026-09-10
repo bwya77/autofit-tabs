@@ -2,8 +2,8 @@
     /* Base dimensions */
     --autofit-min-width: 40px;
     --autofit-left-padding: 12px;
-    --autofit-close-button-left-padding: 30px;
-    --autofit-close-button-right-padding: 8px;
+    --autofit-close-button-left-padding: 10px;
+    --autofit-close-button-right-padding: 10px;
     --autofit-transition-duration: 375ms;
     --autofit-max-width: none;
 
@@ -139,9 +139,17 @@
     position: relative !important;
 }
 
-/* Title sizes to fit text; overflow is visible by default so JS-measured width is trusted */
+/* Title sizes to fit text; overflow is visible by default so JS-measured width is trusted.
+   IMPORTANT: per the flexbox spec, "flex-basis: auto" resolves to the element's own
+   "width" property, NOT to its natural/intrinsic content size. Obsidian's base theme
+   sets width:100% on .workspace-tab-header-inner-title (for the default, non-autofit
+   layout). Since this rule never explicitly overrode "width", that 100% kept winning
+   and made flex-basis effectively 100% too, stretching the title across the whole tab
+   (see https://github.com/bwya77/autofit-tabs/issues/17). Explicitly forcing width:auto
+   here makes flex-basis:auto correctly size to content instead. */
 .workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-inner-title {
     flex: 0 0 auto !important;
+    width: auto !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
     padding: 0 !important;
@@ -162,6 +170,26 @@
     transition: none !important;
     transform: translateZ(0);
     backface-visibility: hidden;
+}
+
+/* Fix for https://github.com/bwya77/autofit-tabs/issues/17 ("Close Button Missing" / huge
+   gap between title and close button). Obsidian's core tab header includes an empty
+   .workspace-tab-header-status-container spacer div between the title and the close
+   button (used in vanilla tabs to push/position status indicators). Because this
+   plugin's own CSS never accounted for that element, it was free to inherit the
+   theme/core default flex sizing (which can grow or otherwise take up space), silently
+   eating part of the calculated tab width as a gap in the wrong place, or in some
+   themes pushing the close button fully out of the visible tab. Since this spacer is
+   always empty in the autofit-tab layout, pin it to zero size so title and close
+   button always sit directly adjacent. */
+.workspace-split.mod-vertical.mod-root .workspace-tab-header.autofit-tab .workspace-tab-header-status-container {
+    flex: 0 0 auto !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
 }
 
 /* Active tab indicator styling is managed by the theme */

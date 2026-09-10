@@ -566,29 +566,13 @@ export class TabManager {
 
     private measureTextWidth(text: string, element: Element): number {
         const styles = window.getComputedStyle(element);
-        
-        let measuredWidth = 0;
-        try {
-            if (!this.canvasContext) {
-                const canvas = document.createElement('canvas');
-                this.canvasContext = canvas.getContext('2d');
-            }
-            if (this.canvasContext) {
-                const fontStyle = styles.fontStyle || 'normal';
-                const fontWeight = styles.fontWeight || 'normal';
-                const fontSize = styles.fontSize || '14px';
-                const fontFamily = styles.fontFamily || 'sans-serif';
-                this.canvasContext.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
-                if ('letterSpacing' in this.canvasContext && styles.letterSpacing && styles.letterSpacing !== 'normal') {
-                    (this.canvasContext as any).letterSpacing = styles.letterSpacing;
-                }
-                measuredWidth = this.canvasContext.measureText(text).width;
-            }
-        } catch {
-            measuredWidth = 0;
-        }
 
-        if ((!measuredWidth || measuredWidth === 0) && this.measureElement) {
+        // Prefer measuring with a real, isolated DOM element (this.measureElement) since
+        // it renders text using the exact same engine/font hinting/antialiasing as the
+        // actual tab title, giving a pixel-accurate result. Canvas text measurement is
+        // used only as a fallback if the DOM measurement element isn't available yet.
+        let measuredWidth = 0;
+        if (this.measureElement) {
             this.measureElement.style.fontFamily = styles.fontFamily;
             this.measureElement.style.fontSize = styles.fontSize;
             this.measureElement.style.fontStyle = styles.fontStyle;
@@ -598,9 +582,34 @@ export class TabManager {
             this.measureElement.textContent = text;
             measuredWidth = this.measureElement.getBoundingClientRect().width || this.measureElement.offsetWidth;
         }
-        
-        // Add safety buffer (8px) to account for subpixel font rendering and padding
-        return Math.ceil(measuredWidth) + 8;
+
+        if (!measuredWidth || measuredWidth === 0) {
+            try {
+                if (!this.canvasContext) {
+                    const canvas = document.createElement('canvas');
+                    this.canvasContext = canvas.getContext('2d');
+                }
+                if (this.canvasContext) {
+                    const fontStyle = styles.fontStyle || 'normal';
+                    const fontWeight = styles.fontWeight || 'normal';
+                    const fontSize = styles.fontSize || '14px';
+                    const fontFamily = styles.fontFamily || 'sans-serif';
+                    this.canvasContext.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+                    if ('letterSpacing' in this.canvasContext && styles.letterSpacing && styles.letterSpacing !== 'normal') {
+                        (this.canvasContext as any).letterSpacing = styles.letterSpacing;
+                    }
+                    measuredWidth = this.canvasContext.measureText(text).width;
+                }
+            } catch {
+                measuredWidth = 0;
+            }
+        }
+
+        // Small safety buffer (3px) for subpixel rounding only. The previous 8px buffer
+        // was compensating for an unrelated bug (see the status-container fix above)
+        // where an unaccounted spacer element was eating tab width unpredictably; with
+        // that fixed structurally, a much smaller buffer is sufficient and accurate.
+        return Math.ceil(measuredWidth) + 3;
     }
 
     private calculateHeaderWidth(header: HTMLElement): number {
